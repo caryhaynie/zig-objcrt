@@ -52,18 +52,18 @@ pub fn msgSend(comptime ReturnType: type, target: anytype, selector: SEL, args: 
         {
             // TODO(hazeycode): replace this hack with the more generalised code above once it doens't crash the compiler
             break :blk switch (args_meta.len) {
-                0 => fn (@TypeOf(target), SEL) callconv(.C) ReturnType,
-                1 => fn (@TypeOf(target), SEL, args_meta[0].field_type) callconv(.C) ReturnType,
-                2 => fn (@TypeOf(target), SEL, args_meta[0].field_type, args_meta[1].field_type) callconv(.C) ReturnType,
-                3 => fn (@TypeOf(target), SEL, args_meta[0].field_type, args_meta[1].field_type, args_meta[2].field_type) callconv(.C) ReturnType,
-                4 => fn (@TypeOf(target), SEL, args_meta[0].field_type, args_meta[1].field_type, args_meta[2].field_type, args_meta[3].field_type) callconv(.C) ReturnType,
+                0 => *const fn (@TypeOf(target), SEL) callconv(.C) ReturnType,
+                1 => *const fn (@TypeOf(target), SEL, args_meta[0].field_type) callconv(.C) ReturnType,
+                2 => *const fn (@TypeOf(target), SEL, args_meta[0].field_type, args_meta[1].field_type) callconv(.C) ReturnType,
+                3 => *const fn (@TypeOf(target), SEL, args_meta[0].field_type, args_meta[1].field_type, args_meta[2].field_type) callconv(.C) ReturnType,
+                4 => *const fn (@TypeOf(target), SEL, args_meta[0].field_type, args_meta[1].field_type, args_meta[2].field_type, args_meta[3].field_type) callconv(.C) ReturnType,
                 else => @compileError("Unsupported number of args: add more variants in zig-objcrt/src/message.zig"),
             };
         }
     };
 
     // NOTE: func is a var because making it const causes a compile error which I believe is a compiler bug
-    var func = @ptrCast(FnType, c.objc_msgSend);
+    var func = @ptrCast(FnType, &c.objc_msgSend);
 
     return @call(.{}, func, .{ target, selector } ++ args);
 }

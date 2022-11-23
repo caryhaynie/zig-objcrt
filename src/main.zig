@@ -69,13 +69,13 @@ pub fn msgSendChecked(comptime ReturnType: type, target: anytype, selector: SEL,
 }
 
 /// The same as calling msgSendChecked except takes a selector name instead of a selector
-pub fn msgSendByName(comptime ReturnType: type, target: anytype, sel_name: [:0]const u8, args: anytype) !ReturnType {
+pub fn msgSendByName(comptime ReturnType: type, target: anytype, sel_name: [*c]const u8, args: anytype) !ReturnType {
     const selector = try sel_getUid(sel_name);
     return msgSendChecked(ReturnType, target, selector, args);
 }
 
 /// The same as calling msgSend except takes a selector name instead of a selector
-pub fn msgSendByNameUnchecked(comptime ReturnType: type, target: anytype, sel_name: [:0]const u8, args: anytype) !ReturnType {
+pub fn msgSendByNameUnchecked(comptime ReturnType: type, target: anytype, sel_name: [*c]const u8, args: anytype) !ReturnType {
     const selector = try sel_getUid(sel_name);
     return msgSend(ReturnType, target, selector, args);
 }
@@ -95,7 +95,7 @@ pub fn dealloc(instance: id) !void {
 
 /// Convenience fn for defining and registering a new Class
 /// dispose of the resultng class using `disposeClassPair`
-pub fn defineAndRegisterClass(name: [:0]const u8, superclass: Class, ivars: anytype, methods: anytype) !Class {
+pub fn defineAndRegisterClass(name: [*c]const u8, superclass: Class, ivars: anytype, methods: anytype) !Class {
     const class = try allocateClassPair(superclass, name, 0);
     errdefer disposeClassPair(class);
 
@@ -136,7 +136,7 @@ pub fn defineAndRegisterClass(name: [:0]const u8, superclass: Class, ivars: anyt
             class,
             selector,
             func,
-            type_enc_str,
+            @ptrCast([*c]const u8,type_enc_str),
         );
         if (result == false) {
             return Error.FailedToAddMethodToClass;
